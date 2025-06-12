@@ -7,11 +7,9 @@ export async function POST(req: NextRequest) {
   // 解析前端傳來的資料
   const contentType = req.headers.get('content-type') || '';
   let url = '';
-  let options = {};
   if (contentType.includes('application/json')) {
     const body = await req.json();
     url = body.url;
-    options = body.options || {};
   } else if (contentType.includes('multipart/form-data')) {
     // TODO: 處理檔案上傳
     // 這裡可用 busboy/formidable 處理大檔案

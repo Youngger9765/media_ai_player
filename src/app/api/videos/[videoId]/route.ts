@@ -1,10 +1,10 @@
-import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-export async function GET(req: NextRequest, { params }: { params: { videoId: string } }) {
-  // 回傳假資料
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function GET(request: Request, context: any) {
+  const { videoId } = context.params;
   return NextResponse.json({
-    videoId: params.videoId,
+    videoId,
     status: 'completed',
     transcript: {
       source: 'mock',
@@ -41,4 +41,4 @@ export async function GET(req: NextRequest, { params }: { params: { videoId: str
       summary: 'AI影片分析讓內容理解更高效。'
     }
   });
-} 
+}

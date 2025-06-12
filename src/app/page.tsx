@@ -3,10 +3,9 @@ import React, { useState, useEffect } from "react";
 
 export default function HomePage() {
   const [videoUrl, setVideoUrl] = useState("");
-  const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
 
   useEffect(() => {
     // 預設載入 demo 假資料
@@ -57,6 +56,7 @@ export default function HomePage() {
           <div style={{ marginBottom: 8 }}>
             <b>逐字稿：</b>
             <ul style={{ paddingLeft: 20 }}>
+              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
               {result.transcript?.segments?.map((seg: any, i: number) => (
                 <li key={i}>{seg.text} <span style={{ color: '#888', fontSize: 12 }}>（{seg.start}~{seg.end}s）</span></li>
               ))}
@@ -65,6 +65,7 @@ export default function HomePage() {
           <div style={{ marginBottom: 8 }}>
             <b>關鍵時刻：</b>
             <ul style={{ paddingLeft: 20 }}>
+              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
               {result.analysis?.key_moments?.map((m: any, i: number) => (
                 <li key={i}>
                   <b>{m.title}</b> [{m.start_time}~{m.end_time}]<br/>
