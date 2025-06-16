@@ -65,16 +65,28 @@ export default function Sidebar({
       <nav style={{ display: 'flex', flexDirection: 'column', gap: 18, width: '90%' }}>
         <button
           style={btnStyle}
-          onClick={() => window.dispatchEvent(new CustomEvent('switch-tab', { detail: { tab: 'transcript' } }))}
+          onClick={() => window.dispatchEvent(new CustomEvent('switch-tab', { detail: { tab: 'simple' } }))}
           onMouseOver={e => (e.currentTarget.style.background = '#1251a3')}
           onMouseOut={e => (e.currentTarget.style.background = '#1976d2')}
         >逐字稿</button>
         <button
           style={btnStyle}
+          onClick={() => window.dispatchEvent(new CustomEvent('switch-tab', { detail: { tab: 'transcript' } }))}
+          onMouseOver={e => (e.currentTarget.style.background = '#1251a3')}
+          onMouseOut={e => (e.currentTarget.style.background = '#1976d2')}
+        >逐字稿（截圖）</button>
+        <button
+          style={btnStyle}
+          onClick={() => window.dispatchEvent(new CustomEvent('switch-tab', { detail: { tab: 'reading' } }))}
+          onMouseOver={e => (e.currentTarget.style.background = '#1251a3')}
+          onMouseOut={e => (e.currentTarget.style.background = '#1976d2')}
+        >文章模式</button>
+        <button
+          style={btnStyle}
           onClick={() => window.dispatchEvent(new CustomEvent('switch-tab', { detail: { tab: 'summary' } }))}
           onMouseOver={e => (e.currentTarget.style.background = '#1251a3')}
           onMouseOut={e => (e.currentTarget.style.background = '#1976d2')}
-        >重點</button>
+        >重點摘要</button>
         <button
           style={btnStyle}
           onClick={() => window.dispatchEvent(new CustomEvent('switch-tab', { detail: { tab: 'keymoments' } }))}
