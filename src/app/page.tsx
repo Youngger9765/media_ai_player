@@ -3,6 +3,34 @@ import React, { useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import ReactMarkdown from "react-markdown";
 
+// 定義 MarkmapWindow 型別，避免 any
+interface MarkmapWindow extends Window {
+  markmap?: {
+    autoLoader: {
+      renderAll: () => void;
+    };
+  };
+}
+
+// 定義 ResultType 型別
+interface ResultType {
+  video_id?: string;
+  questions_answers_json?: string;
+  df_string_output?: string;
+  summary_text?: string;
+  df_summarise?: string;
+  key_moments?: string;
+  key_moments_html?: string;
+  mind_map?: string;
+  mind_map_html?: string;
+  transcript_html?: string;
+  simple_html_content?: string;
+  reading_passage_text?: string;
+  reading_passage?: string;
+  content_subject?: string;
+  content_grade?: string;
+}
+
 // 產生 markmap HTML
 function getMindMapHtml(mind_map: string) {
   const mind_map_markdown = mind_map.replace("```markdown", "").replace("```", "");
@@ -17,84 +45,89 @@ ${mind_map_markdown}
 
 export default function HomePage() {
   const [videoUrl, setVideoUrl] = useState("");
-  const [result, setResult] = useState<any>(null);
-  const [tab, setTab] = useState("transcript");
+  const [result, setResult] = useState<ResultType | null>(null);
+  const [tab, setTab] = useState<string>("transcript");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
   // 處理送出
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!videoUrl) return;
     setLoading(true);
     setMessage("");
     setResult(null);
-    try {
-      const res = await fetch("/api/videos/process", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: videoUrl }),
-      });
-      const { data, error } = await res.json();
-      if (error) {
-        setMessage("API 錯誤：" + error);
-      } else {
-        // 解構 API 回傳的 15 個欄位
-        const [
-          video_id,
-          questions_answers_json,
-          df_string_output, 
-          summary_text,
-          df_summarise,
-          key_moments,
-          key_moments_html,
-          mind_map, 
-          mind_map_html,
-          transcript_html,
-          simple_html_content, 
-          reading_passage_text,
-          reading_passage,
-          content_subject,
-          content_grade,
-        ] = data;
-        setResult({
-          video_id,
-          questions_answers_json,
-          df_string_output, 
-          summary_text,
-          df_summarise,
-          key_moments,
-          key_moments_html,
-          mind_map, 
-          mind_map_html,
-          transcript_html,
-          simple_html_content, 
-          reading_passage_text,
-          reading_passage,
-          content_subject,
-          content_grade,
-        });
-        setMessage("分析完成！");
-      }
-    } catch (err) {
-      setMessage("API 請求失敗：" + String(err));
-    }
-    setLoading(false);
+    fetch("/api/videos/process", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url: videoUrl }),
+    })
+      .then(res => res.json())
+      .then(({ data, error }) => {
+        if (error) {
+          setMessage("API 錯誤：" + error);
+        } else {
+          // 解構 API 回傳的 15 個欄位
+          const [
+            video_id,
+            questions_answers_json,
+            df_string_output, 
+            summary_text,
+            df_summarise,
+            key_moments,
+            key_moments_html,
+            mind_map, 
+            mind_map_html,
+            transcript_html,
+            simple_html_content, 
+            reading_passage_text,
+            reading_passage,
+            content_subject,
+            content_grade,
+          ] = data;
+          setResult({
+            video_id,
+            questions_answers_json,
+            df_string_output, 
+            summary_text,
+            df_summarise,
+            key_moments,
+            key_moments_html,
+            mind_map, 
+            mind_map_html,
+            transcript_html,
+            simple_html_content, 
+            reading_passage_text,
+            reading_passage,
+            content_subject,
+            content_grade,
+          });
+          setMessage("分析完成！");
+        }
+      })
+      .catch(err => {
+        setMessage("API 請求失敗：" + String(err));
+      })
+      .finally(() => setLoading(false));
   };
 
   // 監聽 tab 切換
   useEffect(() => {
-    const handler = (e: any) => setTab(e.detail.tab);
-    window.addEventListener("switch-tab", handler);
-    return () => window.removeEventListener("switch-tab", handler);
+    const handler = (e: Event) => {
+      const customEvent = e as CustomEvent<{ tab: string }>;
+      setTab(customEvent.detail.tab);
+    };
+    window.addEventListener("switch-tab", handler as EventListener);
+    return () => window.removeEventListener("switch-tab", handler as EventListener);
   }, []);
 
   // 切換到 mindmap tab 或內容變動時，自動渲染 markmap
   useEffect(() => {
-    if (tab === 'mindmap' && result?.mind_map && (window as any).markmap) {
+    const win = window as MarkmapWindow;
+    if (tab === 'mindmap' && result?.mind_map && win.markmap) {
       // 清除舊 SVG（避免重複渲染）
       document.querySelectorAll('.markmap svg').forEach(svg => svg.remove());
-      (window as any).markmap.autoLoader.renderAll();
+      win.markmap.autoLoader.renderAll();
     }
   }, [tab, result]);
 
@@ -143,19 +176,19 @@ export default function HomePage() {
             {tab === 'simple' && (
               <>
                 <h2 style={{ fontSize: 20, fontWeight: 600, marginBottom: 8 }}>逐字稿</h2>
-                <div dangerouslySetInnerHTML={{ __html: result.simple_html_content }} />
+                <div dangerouslySetInnerHTML={{ __html: result.simple_html_content ?? "" }} />
               </>
             )}
             {tab === 'transcript' && (
               <>
                 <h2 style={{ fontSize: 20, fontWeight: 600, marginBottom: 8 }}>逐字稿（截圖）</h2>
-                <div dangerouslySetInnerHTML={{ __html: result.transcript_html }} />
+                <div dangerouslySetInnerHTML={{ __html: result.transcript_html ?? "" }} />
               </>
             )}
             {tab === 'reading' && (
               <>
                 <h2 style={{ fontSize: 20, fontWeight: 600, marginBottom: 8 }}>文章模式</h2>
-                <div dangerouslySetInnerHTML={{ __html: result.reading_passage_text }} />
+                <div dangerouslySetInnerHTML={{ __html: result.reading_passage_text ?? "" }} />
               </>
             )}
             {tab === 'summary' && (
@@ -163,7 +196,7 @@ export default function HomePage() {
                 <h2 style={{ fontSize: 20, fontWeight: 600, marginBottom: 8 }}>重點摘要</h2>
                 <div style={{ fontSize: 16, lineHeight: 1.7 }}>
                   <ReactMarkdown>
-                    {result.summary_text}
+                    {result.summary_text ?? ""}
                   </ReactMarkdown>
                 </div>
               </>
@@ -171,7 +204,7 @@ export default function HomePage() {
             {tab === 'keymoments' && (
               <>
                 <h2 style={{ fontSize: 20, fontWeight: 600, marginBottom: 8 }}>關鍵時刻</h2>
-                <div dangerouslySetInnerHTML={{ __html: result.key_moments_html }} />
+                <div dangerouslySetInnerHTML={{ __html: result.key_moments_html ?? "" }} />
               </>
             )}
             {tab === 'mindmap' && (

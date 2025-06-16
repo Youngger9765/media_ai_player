@@ -10,7 +10,7 @@ export default function Sidebar({
   videoUrl: string;
   setVideoUrl: (v: string) => void;
   loading: boolean;
-  handleSubmit: (e: React.FormEvent) => void;
+  handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
 }) {
   // 按鈕樣式
   const btnStyle: React.CSSProperties = {
